@@ -1,3 +1,4 @@
+import asyncio
 import os
 import platform
 import tarfile
@@ -12,20 +13,20 @@ from scrypted_sdk import ScryptedDeviceBase, DeviceProvider, StreamService
 def extract_zip(tmp, fullpath):
     print("Extracting", tmp, "to", fullpath)
     with zipfile.ZipFile(tmp, 'r') as z:
-        z.extractall(os.path.dirname(fullpath))
+        z.extractall(fullpath)
 
 
 def extract_tbz(tmp, fullpath):
     print("Extracting", tmp, "to", fullpath)
     with tarfile.open(tmp, 'r:bz2') as z:
-        z.extractall(os.path.dirname(fullpath))
+        z.extractall(fullpath)
 
 
 DOWNLOADS = {
     "windows": {
         "amd64": {
             "url": "https://github.com/aristocratos/btop4win/releases/download/v1.0.4/btop4win-x64.zip",
-            "exe": "btop4win.exe",
+            "exe": "btop4win/btop4win.exe",
             "extract": extract_zip,
         }
     },
@@ -60,23 +61,30 @@ class BtopPlugin(ScryptedDeviceBase, StreamService, DeviceProvider):
 
     def __init__(self, nativeId: str = None) -> None:
         super().__init__(nativeId)
+        self.downloaded = asyncio.ensure_future(self.do_download())
 
-        download = DOWNLOADS.get(platform.system().lower(), {}).get(platform.machine().lower())
-        if not download:
-            raise Exception(f"Unsupported platform {platform.system()} {platform.machine()}")
+    async def do_download(self) -> None:
+        try:
+            download = DOWNLOADS.get(platform.system().lower(), {}).get(platform.machine().lower())
+            if not download:
+                raise Exception(f"Unsupported platform {platform.system()} {platform.machine()}")
 
-        self.install = self.downloadFile(download['url'], 'btop', download['extract'])
-        self.exe = os.path.join(self.install, download['exe'])
-        if platform.system() == 'Windows':
-            self.exe = os.path.realpath(os.path.join(self.install, '..', 'btop4win', download['exe']))
+            self.install = self.downloadFile(download['url'], 'btop', download['extract'])
+            self.exe = os.path.realpath(os.path.join(self.install, download['exe']))
 
-        print("btop executable:", self.exe)
+            print("btop executable:", self.exe)
+        except:
+            import traceback
+            traceback.print_exc()
+            await scrypted_sdk.deviceManager.requestRestart()
+            await asyncio.sleep(3600)
 
     # Management ui v2's PtyComponent expects the plugin device to implement
     # DeviceProvider and return the StreamService device via getDevice.
     async def getDevice(self, nativeId: str) -> Any:
         # hack for other plugins to request where the executable is installed
         if nativeId == "btop-executable":
+            await self.downloaded
             return self.exe
         return self
 
@@ -84,7 +92,7 @@ class BtopPlugin(ScryptedDeviceBase, StreamService, DeviceProvider):
         try:
             filesPath = os.path.join(os.environ['SCRYPTED_PLUGIN_VOLUME'], 'files')
             fullpath = os.path.join(filesPath, filename)
-            if os.path.isfile(fullpath):
+            if os.path.exists(fullpath):
                 return fullpath
             tmp = fullpath + '.tmp'
             print("Creating directory for", tmp)
