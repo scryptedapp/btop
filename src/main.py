@@ -41,6 +41,18 @@ DOWNLOADS = {
             "extract": extract_tbz,
         },
     },
+    "darwin": {
+        "x86_64": {
+            "url": "https://github.com/bjia56/btop-builder/releases/download/v1.3.2-0/btop-darwin-universal.zip",
+            "exe": "bin/btop",
+            "extract": extract_zip,
+        },
+        "arm64": {
+            "url": "https://github.com/bjia56/btop-builder/releases/download/v1.3.2-0/btop-darwin-universal.zip",
+            "exe": "bin/btop",
+            "extract": extract_zip,
+        },
+    },
 }
 
 
@@ -55,12 +67,17 @@ class BtopPlugin(ScryptedDeviceBase, StreamService, DeviceProvider):
 
         self.install = self.downloadFile(download['url'], 'btop', download['extract'])
         self.exe = os.path.join(self.install, download['exe'])
+        if platform.system() == 'Windows':
+            self.exe = os.path.realpath(os.path.join(self.install, '..', 'btop4win', download['exe']))
 
         print("btop executable:", self.exe)
 
     # Management ui v2's PtyComponent expects the plugin device to implement
     # DeviceProvider and return the StreamService device via getDevice.
     async def getDevice(self, nativeId: str) -> Any:
+        # hack for other plugins to request where the executable is installed
+        if nativeId == "btop-executable":
+            return self.exe
         return self
 
     def downloadFile(self, url: str, filename: str, extract: Callable[[str, str], None] = None) -> str:
