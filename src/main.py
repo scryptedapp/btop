@@ -45,12 +45,12 @@ DOWNLOADS = {
     "darwin": {
         "x86_64": {
             "url": "https://github.com/bjia56/btop-builder/releases/download/v1.3.2-0/btop-darwin-universal.zip",
-            "exe": "bin/btop",
+            "exe": "btop/bin/btop",
             "extract": extract_zip,
         },
         "arm64": {
             "url": "https://github.com/bjia56/btop-builder/releases/download/v1.3.2-0/btop-darwin-universal.zip",
-            "exe": "bin/btop",
+            "exe": "btop/bin/btop",
             "extract": extract_zip,
         },
     },
@@ -71,6 +71,9 @@ class BtopPlugin(ScryptedDeviceBase, StreamService, DeviceProvider):
 
             self.install = self.downloadFile(download['url'], 'btop', download['extract'])
             self.exe = os.path.realpath(os.path.join(self.install, download['exe']))
+
+            if platform.system() != 'Windows':
+                os.chmod(self.exe, 0o755)
 
             print("btop executable:", self.exe)
         except:
