@@ -33,12 +33,12 @@ DOWNLOADS = {
     "linux": {
         "x86_64": {
             "url": "https://github.com/aristocratos/btop/releases/download/v1.3.2/btop-x86_64-linux-musl.tbz",
-            "exe": "bin/btop",
+            "exe": "btop/bin/btop",
             "extract": extract_tbz,
         },
         "aarch64": {
             "url": "https://github.com/aristocratos/btop/releases/download/v1.3.2/btop-aarch64-linux-musl.tbz",
-            "exe": "bin/btop",
+            "exe": "btop/bin/btop",
             "extract": extract_tbz,
         },
     },
