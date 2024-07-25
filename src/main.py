@@ -1,6 +1,7 @@
 import asyncio
 import os
 import platform
+import shutil
 import tarfile
 from typing import Any, AsyncGenerator, Callable
 import urllib.request
@@ -76,6 +77,18 @@ class BtopPlugin(ScryptedDeviceBase, StreamService, DeviceProvider):
                 os.chmod(self.exe, 0o755)
 
             print("btop executable:", self.exe)
+
+            # restructure themes
+            if platform.system() != "Windows":
+                bin_dir = os.path.dirname(self.exe)
+                base_dir = os.path.dirname(bin_dir)
+                themes_dir = os.path.join(base_dir, 'themes')
+
+                os.makedirs(os.path.join(base_dir, 'share', 'btop'), exist_ok=True)
+                try:
+                    shutil.copytree(themes_dir, os.path.join(base_dir, 'share', 'btop', 'themes'), dirs_exist_ok=False)
+                except:
+                    pass
         except:
             import traceback
             traceback.print_exc()
