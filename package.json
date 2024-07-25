@@ -1,6 +1,6 @@
 {
    "name": "@scrypted/btop",
-   "version": "0.0.1",
+   "version": "0.0.2",
    "description": "btop monitoring interface for Scrypted",
    "license": "Apache",
    "keywords": [
