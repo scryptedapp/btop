@@ -30,7 +30,8 @@
       "type": "API",
       "interfaces": [
          "DeviceProvider",
-         "StreamService"
+         "StreamService",
+         "TTY"
       ]
    },
    "devDependencies": {
