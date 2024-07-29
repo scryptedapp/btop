@@ -31,7 +31,8 @@
       "interfaces": [
          "DeviceProvider",
          "StreamService",
-         "TTY"
+         "TTY",
+         "Settings"
       ]
    },
    "devDependencies": {

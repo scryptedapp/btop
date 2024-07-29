@@ -8,7 +8,7 @@ import urllib.request
 import zipfile
 
 import scrypted_sdk
-from scrypted_sdk import ScryptedDeviceBase, DeviceProvider, StreamService
+from scrypted_sdk import ScryptedDeviceBase, DeviceProvider, StreamService, Settings, Setting
 
 
 def extract_zip(tmp, fullpath):
@@ -58,7 +58,7 @@ DOWNLOADS = {
 }
 
 
-class BtopPlugin(ScryptedDeviceBase, StreamService, DeviceProvider):
+class BtopPlugin(ScryptedDeviceBase, StreamService, DeviceProvider, Settings):
 
     def __init__(self, nativeId: str = None) -> None:
         super().__init__(nativeId)
@@ -98,10 +98,6 @@ class BtopPlugin(ScryptedDeviceBase, StreamService, DeviceProvider):
     # Management ui v2's PtyComponent expects the plugin device to implement
     # DeviceProvider and return the StreamService device via getDevice.
     async def getDevice(self, nativeId: str) -> Any:
-        # hack for other plugins to request where the executable is installed
-        if nativeId == "btop-executable":
-            await self.downloaded
-            return self.exe
         return self
 
     def downloadFile(self, url: str, filename: str, extract: Callable[[str, str], None] = None) -> str:
@@ -144,6 +140,23 @@ class BtopPlugin(ScryptedDeviceBase, StreamService, DeviceProvider):
         return await termsvc_direct.connectStream(input, {
             'cmd': [self.exe, '--utf-force']
         })
+
+    async def getSettings(self) -> list[Setting]:
+        await self.downloaded
+        return [
+            {
+                "key": "btop_executable",
+                "title": "btop Executable Path",
+                "description": "Path to the downloaded btop executable.",
+                "value": self.exe,
+                "readonly": True,
+            }
+        ]
+
+    async def putSetting(self, key: str, value: str) -> None:
+        # this allows the btop-camera plugin to update the configs
+        if key == "btop_config_migration":
+            raise Exception("Migration not yet implemented, what we got:\n" + value)
 
 
 def create_scrypted_plugin():
