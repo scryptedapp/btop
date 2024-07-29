@@ -3,12 +3,40 @@ import os
 import platform
 import shutil
 import tarfile
+import types
 from typing import Any, AsyncGenerator, Callable
 import urllib.request
 import zipfile
 
 import scrypted_sdk
-from scrypted_sdk import ScryptedDeviceBase, DeviceProvider, StreamService, Settings, Setting
+from scrypted_sdk import ScryptedDeviceBase, DeviceProvider, StreamService, Settings, Setting, ScryptedInterface
+
+
+# patch SystemManager.getDeviceByName
+def getDeviceByName(self, name: str) -> scrypted_sdk.ScryptedDevice:
+    for check in self.systemState:
+        state = self.systemState.get(check, None)
+        if not state:
+            continue
+        checkInterfaces = state.get('interfaces', None)
+        if not checkInterfaces:
+            continue
+        interfaces = checkInterfaces.get('value', [])
+        if ScryptedInterface.ScryptedPlugin.value in interfaces:
+            checkPluginId = state.get('pluginId', None)
+            if not checkPluginId:
+                continue
+            pluginId = checkPluginId.get('value', None)
+            if not pluginId:
+                continue
+            if pluginId == name:
+                return self.getDeviceById(check)
+        checkName = state.get('name', None)
+        if not checkName:
+            continue
+        if checkName.get('value', None) == name:
+            return self.getDeviceById(check)
+scrypted_sdk.systemManager.getDeviceByName = types.MethodType(getDeviceByName, scrypted_sdk.systemManager)
 
 
 def extract_zip(tmp, fullpath):
@@ -70,7 +98,7 @@ class BtopPlugin(ScryptedDeviceBase, StreamService, DeviceProvider, Settings):
             if not download:
                 raise Exception(f"Unsupported platform {platform.system()} {platform.machine()}")
 
-            self.install = self.downloadFile(download['url'], 'btop', download['extract'])
+            self.install = self.downloadFile(download['url'], f'btop-{platform.system()}-{platform.machine()}', download['extract'])
             self.exe = os.path.realpath(os.path.join(self.install, download['exe']))
 
             if platform.system() != 'Windows':
@@ -89,11 +117,19 @@ class BtopPlugin(ScryptedDeviceBase, StreamService, DeviceProvider, Settings):
                     shutil.copytree(themes_dir, os.path.join(base_dir, 'share', 'btop', 'themes'), dirs_exist_ok=False)
                 except:
                     pass
+
+            await self.restart_btop_camera()
         except:
             import traceback
             traceback.print_exc()
             await scrypted_sdk.deviceManager.requestRestart()
             await asyncio.sleep(3600)
+
+    async def restart_btop_camera(self) -> None:
+        btop_camera = scrypted_sdk.systemManager.getDeviceByName("@scrypted/btop-camera")
+        if not btop_camera:
+            return
+        await btop_camera.putSetting("btop_restart", None)
 
     # Management ui v2's PtyComponent expects the plugin device to implement
     # DeviceProvider and return the StreamService device via getDevice.
@@ -155,8 +191,8 @@ class BtopPlugin(ScryptedDeviceBase, StreamService, DeviceProvider, Settings):
 
     async def putSetting(self, key: str, value: str) -> None:
         # this allows the btop-camera plugin to update the configs
-        if key == "btop_config_migration":
-            raise Exception("Migration not yet implemented, what we got:\n" + value)
+        if key == "btop_config":
+            print("Migration not yet implemented, what we got:\n" + value)
 
 
 def create_scrypted_plugin():
