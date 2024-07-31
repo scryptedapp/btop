@@ -69,7 +69,7 @@ DOWNLOADS = {
             "extract": extract_zip,
         },
         "aarch64": {
-            "url": "https://github.com/bjia56/btop-builder/releases/download/v1.3.2-1/btop-linux-x86_64.zip",
+            "url": "https://github.com/bjia56/btop-builder/releases/download/v1.3.2-1/btop-linux-aarch64.zip",
             "exe": "btop/bin/btop",
             "extract": extract_zip,
         },
@@ -87,7 +87,7 @@ DOWNLOADS = {
         },
     },
 }
-DOWNLOAD_CACHE_BUST = "20240731"
+DOWNLOAD_CACHE_BUST = "20240731-1"
 
 
 class BtopPlugin(ScryptedDeviceBase, StreamService, DeviceProvider, Settings):
