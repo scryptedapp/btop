@@ -64,29 +64,30 @@ DOWNLOADS = {
     },
     "linux": {
         "x86_64": {
-            "url": "https://github.com/aristocratos/btop/releases/download/v1.3.2/btop-x86_64-linux-musl.tbz",
+            "url": "https://github.com/bjia56/btop-builder/releases/download/v1.3.2-1/btop-linux-x86_64.zip",
             "exe": "btop/bin/btop",
-            "extract": extract_tbz,
+            "extract": extract_zip,
         },
         "aarch64": {
-            "url": "https://github.com/aristocratos/btop/releases/download/v1.3.2/btop-aarch64-linux-musl.tbz",
+            "url": "https://github.com/bjia56/btop-builder/releases/download/v1.3.2-1/btop-linux-x86_64.zip",
             "exe": "btop/bin/btop",
-            "extract": extract_tbz,
+            "extract": extract_zip,
         },
     },
     "darwin": {
         "x86_64": {
-            "url": "https://github.com/bjia56/btop-builder/releases/download/v1.3.2-0/btop-darwin-universal.zip",
+            "url": "https://github.com/bjia56/btop-builder/releases/download/v1.3.2-1/btop-darwin-universal.zip",
             "exe": "btop/bin/btop",
             "extract": extract_zip,
         },
         "arm64": {
-            "url": "https://github.com/bjia56/btop-builder/releases/download/v1.3.2-0/btop-darwin-universal.zip",
+            "url": "https://github.com/bjia56/btop-builder/releases/download/v1.3.2-1/btop-darwin-universal.zip",
             "exe": "btop/bin/btop",
             "extract": extract_zip,
         },
     },
 }
+DOWNLOAD_CACHE_BUST = "20240731"
 
 
 class BtopPlugin(ScryptedDeviceBase, StreamService, DeviceProvider, Settings):
@@ -104,6 +105,9 @@ class BtopPlugin(ScryptedDeviceBase, StreamService, DeviceProvider, Settings):
             if not download:
                 raise Exception(f"Unsupported platform {platform.system()} {platform.machine()}")
 
+            if self.should_force_download():
+                shutil.rmtree(os.path.join(os.environ['SCRYPTED_PLUGIN_VOLUME'], 'files'), ignore_errors=True)
+
             self.install = self.downloadFile(download['url'], f'btop-{platform.system()}-{platform.machine()}', download['extract'])
             self.exe = os.path.realpath(os.path.join(self.install, download['exe']))
 
@@ -111,18 +115,6 @@ class BtopPlugin(ScryptedDeviceBase, StreamService, DeviceProvider, Settings):
                 os.chmod(self.exe, 0o755)
 
             print("btop executable:", self.exe)
-
-            # restructure themes
-            if platform.system() != "Windows":
-                bin_dir = os.path.dirname(self.exe)
-                base_dir = os.path.dirname(bin_dir)
-                themes_dir = os.path.join(base_dir, 'themes')
-
-                os.makedirs(os.path.join(base_dir, 'share', 'btop'), exist_ok=True)
-                try:
-                    shutil.copytree(themes_dir, os.path.join(base_dir, 'share', 'btop', 'themes'), dirs_exist_ok=False)
-                except:
-                    pass
 
             await self.restart_btop_camera()
         except:
@@ -175,6 +167,17 @@ class BtopPlugin(ScryptedDeviceBase, StreamService, DeviceProvider, Settings):
         # DeviceProvider and return the StreamService device via getDevice.
         return self
 
+    def should_force_download(self) -> bool:
+        try:
+            filesPath = os.path.join(os.environ['SCRYPTED_PLUGIN_VOLUME'], 'files')
+            cachebustPath = os.path.join(filesPath, f'cachebust-{platform.system()}-{platform.machine()}')
+            if not os.path.exists(cachebustPath):
+                return True
+            with open(cachebustPath) as f:
+                return f.read() != DOWNLOAD_CACHE_BUST
+        except:
+            return True
+
     def downloadFile(self, url: str, filename: str, extract: Callable[[str, str], None] = None) -> str:
         try:
             filesPath = os.path.join(os.environ['SCRYPTED_PLUGIN_VOLUME'], 'files')
@@ -201,6 +204,9 @@ class BtopPlugin(ScryptedDeviceBase, StreamService, DeviceProvider, Settings):
                 extract(tmp, fullpath)
             else:
                 os.rename(tmp, fullpath)
+            cachebustPath = os.path.join(filesPath, f'cachebust-{platform.system()}-{platform.machine()}')
+            with open(cachebustPath, 'w') as f:
+                f.write(DOWNLOAD_CACHE_BUST)
             return fullpath
         except:
             print("Error downloading", url)
