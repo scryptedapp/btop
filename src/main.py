@@ -296,6 +296,9 @@ class BtopConfig(ScryptedDeviceBase, Scriptable, Readme):
             with open(config) as f:
                 data = f.read()
 
+            while self.storage is None:
+                await asyncio.sleep(1)
+
             if self.storage.getItem('config') and data != self.config:
                 with open(config, 'w') as f:
                     f.write(self.config)
