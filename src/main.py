@@ -112,7 +112,10 @@ class BtopPlugin(ScryptedDeviceBase, StreamService, DeviceProvider, Settings):
             self.exe = os.path.realpath(os.path.join(self.install, download['exe']))
 
             if platform.system() != 'Windows':
-                os.chmod(self.exe, 0o755)
+                try:
+                    os.chmod(self.exe, 0o755)
+                except:
+                    pass
 
             print("btop executable:", self.exe)
 
