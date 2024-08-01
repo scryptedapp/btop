@@ -202,4 +202,9 @@ selected_battery = "Auto"
 #* Set loglevel for "~/.config/btop/btop.log" levels are: "ERROR" "WARNING" "INFO" "DEBUG".
 #* The level set includes all lower levels, i.e. "DEBUG" will show all logging info.
 log_level = "DEBUG"
+
+#* For cases where Intel GPU cannot be read by btop directly (e.g. unprivileged Docker/LXC container),
+#* an http server can be run on the host to provide the data. Run https://github.com/bjia56/intel-gpu-exporter
+#* on the host and set its url here.
+intel_gpu_exporter = ""
 """.strip()

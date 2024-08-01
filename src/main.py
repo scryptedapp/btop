@@ -115,6 +115,8 @@ class BtopPlugin(ScryptedDeviceBase, StreamService, DeviceProvider, Settings):
                 try:
                     os.chmod(self.exe, 0o755)
                 except:
+                    # maybe this is fine? allows the plugin to start up,
+                    # but the user can't chmod the executable so it's probably owned by someone else
                     pass
 
             print("btop executable:", self.exe)
