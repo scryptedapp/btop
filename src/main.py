@@ -223,6 +223,10 @@ class BtopPlugin(ScryptedDeviceBase, StreamService, DeviceProvider, Settings):
         core = scrypted_sdk.systemManager.getDeviceByName("@scrypted/core")
         termsvc = await core.getDevice("terminalservice")
         termsvc_direct = await scrypted_sdk.sdk.connectRPCObject(termsvc)
+        if platform.system() == 'Windows':
+            return await termsvc_direct.connectStream(input, {
+                'cmd': [self.exe]
+            })
         return await termsvc_direct.connectStream(input, {
             'cmd': [self.exe, '--utf-force']
         })
