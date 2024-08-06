@@ -64,30 +64,30 @@ DOWNLOADS = {
     },
     "linux": {
         "x86_64": {
-            "url": "https://github.com/bjia56/btop-builder/releases/download/v1.3.2-3/btop-linux-x86_64.zip",
+            "url": "https://github.com/bjia56/btop-builder/releases/download/v1.3.2-4/btop-linux-x86_64.zip",
             "exe": "btop/bin/btop",
             "extract": extract_zip,
         },
         "aarch64": {
-            "url": "https://github.com/bjia56/btop-builder/releases/download/v1.3.2-3/btop-linux-aarch64.zip",
+            "url": "https://github.com/bjia56/btop-builder/releases/download/v1.3.2-4/btop-linux-aarch64.zip",
             "exe": "btop/bin/btop",
             "extract": extract_zip,
         },
     },
     "darwin": {
         "x86_64": {
-            "url": "https://github.com/bjia56/btop-builder/releases/download/v1.3.2-3/btop-darwin-universal.zip",
+            "url": "https://github.com/bjia56/btop-builder/releases/download/v1.3.2-4/btop-darwin-universal.zip",
             "exe": "btop/bin/btop",
             "extract": extract_zip,
         },
         "arm64": {
-            "url": "https://github.com/bjia56/btop-builder/releases/download/v1.3.2-3/btop-darwin-universal.zip",
+            "url": "https://github.com/bjia56/btop-builder/releases/download/v1.3.2-4/btop-darwin-universal.zip",
             "exe": "btop/bin/btop",
             "extract": extract_zip,
         },
     },
 }
-DOWNLOAD_CACHE_BUST = "20240801-0"
+DOWNLOAD_CACHE_BUST = "20240806-0"
 
 
 class BtopPlugin(ScryptedDeviceBase, StreamService, DeviceProvider, Settings):
@@ -398,8 +398,7 @@ class BtopConfig(ScryptedDeviceBase, Scriptable, Readme):
 Additional themes can be downloaded from the theme manager page.
 
 Available themes:
-{'\n'.join(['- ' + theme for theme in self.themes])}
-"""
+""" + '\n'.join(['- ' + theme for theme in self.themes])
 
 
 class DownloaderBase(ScryptedDeviceBase):
