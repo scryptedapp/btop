@@ -36,6 +36,6 @@
       ]
    },
    "devDependencies": {
-      "@scrypted/sdk": "^0.3.31"
+      "@scrypted/sdk": "^0.3.52"
    }
 }
