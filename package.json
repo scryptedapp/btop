@@ -32,6 +32,7 @@
          "DeviceProvider",
          "StreamService",
          "TTY",
+         "TTYSettings",
          "Settings"
       ]
    },

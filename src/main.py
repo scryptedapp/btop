@@ -10,7 +10,7 @@ import urllib.request
 import zipfile
 
 import scrypted_sdk
-from scrypted_sdk import ScryptedDeviceBase, DeviceProvider, StreamService, Settings, Setting, ScryptedInterface, ScryptedDeviceType, Scriptable, ScriptSource, Readme
+from scrypted_sdk import ScryptedDeviceBase, DeviceProvider, StreamService, Settings, Setting, ScryptedInterface, ScryptedDeviceType, Scriptable, ScriptSource, Readme, TTYSettings
 
 import btop_config
 
@@ -90,7 +90,7 @@ DOWNLOADS = {
 DOWNLOAD_CACHE_BUST = "20240806-0"
 
 
-class BtopPlugin(ScryptedDeviceBase, StreamService, DeviceProvider, Settings):
+class BtopPlugin(ScryptedDeviceBase, StreamService, DeviceProvider, Settings, TTYSettings):
 
     def __init__(self, nativeId: str = None) -> None:
         super().__init__(nativeId)
@@ -259,6 +259,12 @@ class BtopPlugin(ScryptedDeviceBase, StreamService, DeviceProvider, Settings):
                 thememanager = await self.getDevice("thememanager")
                 await thememanager.putSetting("theme_urls", value)
                 self.storage.setItem('btop_theme_urls_migrated', '1')
+
+    async def getTTYSettings(self) -> Any:
+        await self.downloaded
+        return {
+            "paths": [os.path.dirname(self.exe)],
+        }
 
 
 class BtopConfig(ScryptedDeviceBase, Scriptable, Readme):
