@@ -1,6 +1,6 @@
 {
    "name": "@scrypted/btop",
-   "version": "0.0.13",
+   "version": "0.0.14",
    "description": "btop monitoring interface for Scrypted",
    "license": "Apache",
    "keywords": [
@@ -37,6 +37,6 @@
       ]
    },
    "devDependencies": {
-      "@scrypted/sdk": "^0.3.52"
+      "@scrypted/sdk": "^0.3.111"
    }
 }

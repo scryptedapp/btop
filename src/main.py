@@ -98,6 +98,18 @@ class BtopPlugin(ScryptedDeviceBase, StreamService, DeviceProvider, Settings, TT
         self.thememanager = None
         self.downloaded = asyncio.ensure_future(self.do_download())
         self.discovered_devices = asyncio.ensure_future(self.do_device_discovery())
+        asyncio.create_task(self.deprecation_warning())
+
+    async def get_logger(self) -> Any:
+        return await scrypted_sdk.systemManager.api.getLogger(self.nativeId)
+
+    async def alert(self, msg) -> None:
+        logger = await self.get_logger()
+        await logger.log('a', msg)
+
+    async def deprecation_warning(self) -> None:
+        await self.downloaded
+        await self.alert("This plugin is deprecated. Please use the @scrypted/cosmotop plugin instead.")
 
     async def do_download(self) -> None:
         try:
